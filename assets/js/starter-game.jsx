@@ -5,28 +5,43 @@ import _ from "lodash";
 import Card from "./card";
 
 export default function game_init(root) {
-  ReactDOM.render(<Starter />, root);
+  ReactDOM.render(<App />, root);
 }
 
 const allLetters = ["A", "B", "C", "D", "E", "F", "G", "H"];
 
+// Every possible tile name, indexed.
 const tiles = allLetters.reduce((acc, letter) => {
-  acc[`${letter}1`] = false;
-  acc[`${letter}2`] = false;
+  acc.push(`${letter}1`, `${letter}2`);
   return acc;
 }, []);
 
-const StarterInitialState = Object.assign(tiles, {
-  // The number of times the user clicks in the game
-  numClicks: 0,
-  firstSelected: null,
-  secondSelected: null
-});
+// Tiles in the form of a key-value map, each with the value 'false'
+const tilesState = tiles.reduce((acc, letterNumber) => {
+  acc[letterNumber] = false;
+  return acc;
+}, {});
 
-class Starter extends React.Component {
+// best to keep state shallow
+const getInitialAppState = () =>
+  Object.assign(
+    {},
+    {
+      numClicks: 0, // The number of times the user clicks in the game
+      frozen: false, // is the game frozen? means all buttnos should not work
+      tilesRandomOrder: tiles
+        .slice() // copy the array, don't want to sort the original
+        .sort(() => 0.5 - Math.random() * Math.random()),
+      firstSelected: null,
+      secondSelected: null
+    },
+    tilesState
+  );
+
+class App extends React.Component {
   constructor(props) {
     super(props);
-    this.state = Object.assign({}, StarterInitialState);
+    this.state = getInitialAppState();
 
     this.reset = this.reset.bind(this);
     this.tileClicked = this.tileClicked.bind(this);
@@ -34,54 +49,65 @@ class Starter extends React.Component {
     this.secondTileClicked = this.secondTileClicked.bind(this);
   }
 
+  // Reset the game
   reset() {
-    this.setState(Object.assign({}, StarterInitialState), () =>
-      console.log("Reset the game")
-    );
+    if (this.state.timeoutId) {
+      window.clearTimeout(this.state.timeoutId);
+    }
+    this.setState(getInitialAppState(), () => console.log("Reset the game"));
   }
 
   firstTileClicked(letter) {
-    this.setState(prevState => ({
-      firstSelected: `${letter}1`,
-      [`${letter}1`]: true
-    }));
+    this.setState({
+      firstSelected: letter,
+      [letter]: true
+    });
   }
 
   secondTileClicked(letter) {
-    if (this.state[`${letter}1`]) {
-      this.setState(prevState => ({
-        [`${letter}2`]: true
-      }));
+    const inverseLetter = letter.split("").reduce((acc, x, index) => {
+      index == 0 ? (acc = x) : (acc = `${acc}${x == 1 ? 2 : 1}`);
+      return acc;
+    }, "");
+    if (this.state[inverseLetter]) {
+      this.setState({
+        firstSelected: null,
+        secondSelected: null,
+        [letter]: true
+      });
     } else {
       this.setState(
-        prevState => ({
+        {
           frozen: true,
-          secondSelected: `${letter}2`,
-          [`${letter}2`]: true
-        }),
+          secondSelected: letter,
+          [letter]: true
+        },
         () => {
-          setTimeout(() => {
+          const timeoutId = setTimeout(() => {
             this.setState(prevState => {
               const { firstSelected, secondSelected } = prevState;
               return {
                 frozen: false,
-                firstSelected: null,
-                secondSelected: null,
+                firstSelected: false,
+                secondSelected: false,
                 [firstSelected]: false,
                 [secondSelected]: false
               };
             });
-          }, 2000);
+          }, 3000);
+          this.setState({ timeoutId });
         }
       );
     }
   }
 
+  // returns a function that will be called if a card is clicked.
+  // the returned function should ONLY be called if the car is not selected.
   tileClicked(letter) {
     return () => {
-      this.setState({
-        numClicks: this.state.numClicks + 1
-      });
+      this.setState(prevState => ({
+        numClicks: prevState.numClicks + 1
+      }));
       const { firstSelected } = this.state;
       if (firstSelected) {
         this.secondTileClicked(letter);
@@ -94,21 +120,19 @@ class Starter extends React.Component {
   render() {
     return (
       <div>
-        {Object.keys(this.state)
-          .filter(key => allLetters.includes(key.split("")[0])) // HACK ALERT
-          .map(key => {
-            const name = key.split("")[0];
-            return (
-              <Card
-                frozen={this.state.frozen}
-                key={key}
-                name={name}
-                selected={this.state[key]}
-                completed={this.state[`${name}1`] && this.state[`${name}2`]}
-                clicked={this.tileClicked(name)}
-              />
-            );
-          })}
+        {this.state.tilesRandomOrder.map(key => {
+          const name = key.split("")[0];
+          return (
+            <Card
+              frozen={this.state.frozen}
+              key={key}
+              name={name}
+              selected={this.state[key]}
+              completed={this.state[`${name}1`] && this.state[`${name}2`]}
+              clicked={this.tileClicked(key)}
+            />
+          );
+        })}
         <button onClick={this.reset}>Restart game</button>
         <div>Clicks in this game: {this.state.numClicks}</div>
       </div>

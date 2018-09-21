@@ -2,9 +2,9 @@ import React from "react";
 
 export default function Card({ selected, name, completed, clicked, frozen }) {
   if (completed) {
-    return <div>{name} found</div>;
+    return <span>{name} found</span>;
   } else if (selected) {
-    return <div>{name}</div>;
+    return <span>{name}</span>;
   } else {
     return (
       <button
