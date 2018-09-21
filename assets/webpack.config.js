@@ -23,11 +23,11 @@ module.exports = (env, options) => ({
     rules: [
       {
         test: /\.(js|jsx)$/,
-        exclude: /node_modules/,
+        exclude: [path.resolve(__dirname, "../deps"),  /node_modules/],
         use: {
           loader: 'babel-loader',
           options: {
-            presets: ['env', 'react'],
+            presets: ['react', 'env']
           },
         }
       },

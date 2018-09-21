@@ -25,6 +25,9 @@ memory-*.tar
 # If NPM crashes, it generates a log, let's ignore it too.
 npm-debug.log
 
+# I don't want to upload the NPM lockfile
+package-lock.json
+
 # The directory NPM downloads your dependencies sources to.
 /assets/node_modules/
 
