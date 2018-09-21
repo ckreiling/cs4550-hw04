@@ -43,7 +43,6 @@ class Starter extends React.Component {
   firstTileClicked(letter) {
     this.setState(prevState => ({
       firstSelected: `${letter}1`,
-      numClicks: prevState.numClicks + 1,
       [`${letter}1`]: true
     }));
   }
@@ -51,23 +50,21 @@ class Starter extends React.Component {
   secondTileClicked(letter) {
     if (this.state[`${letter}1`]) {
       this.setState(prevState => ({
-        numClicks: prevState.numClicks + 1,
         [`${letter}2`]: true
       }));
     } else {
       this.setState(
-        {
+        prevState => ({
           frozen: true,
           secondSelected: `${letter}2`,
           [`${letter}2`]: true
-        },
+        }),
         () => {
           setTimeout(() => {
             this.setState(prevState => {
-              const { firstSelected, secondSelected, numClicks } = prevState;
+              const { firstSelected, secondSelected } = prevState;
               return {
                 frozen: false,
-                numClicks: numClicks + 1,
                 firstSelected: null,
                 secondSelected: null,
                 [firstSelected]: false,
@@ -82,6 +79,9 @@ class Starter extends React.Component {
 
   tileClicked(letter) {
     return () => {
+      this.setState({
+        numClicks: this.state.numClicks + 1
+      });
       const { firstSelected } = this.state;
       if (firstSelected) {
         this.secondTileClicked(letter);
@@ -110,6 +110,7 @@ class Starter extends React.Component {
             );
           })}
         <button onClick={this.reset}>Restart game</button>
+        <div>Clicks in this game: {this.state.numClicks}</div>
       </div>
     );
   }
