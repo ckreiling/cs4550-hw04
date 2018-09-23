@@ -33,7 +33,8 @@ const getInitialAppState = () =>
         .slice() // copy the array, don't want to sort the original
         .sort(() => 0.5 - Math.random() * Math.random()),
       firstSelected: null,
-      secondSelected: null
+      secondSelected: null,
+      timeoutId: null
     },
     tilesState
   );
