@@ -106,9 +106,11 @@ class App extends React.Component {
   // the returned function should ONLY be called if the car is not selected.
   tileClicked(letter) {
     return () => {
-      this.setState(prevState => ({
-        numClicks: prevState.numClicks + 1
-      }));
+      if (!this.state.frozen) {
+        this.setState(prevState => ({
+          numClicks: prevState.numClicks + 1
+        }));
+      }
       const { firstSelected } = this.state;
       if (firstSelected) {
         this.secondTileClicked(letter);
@@ -120,21 +122,25 @@ class App extends React.Component {
 
   render() {
     return (
-      <div>
-        {this.state.tilesRandomOrder.map(key => {
-          const name = key.split("")[0];
-          return (
-            <Card
-              frozen={this.state.frozen}
-              key={key}
-              name={name}
-              selected={this.state[key]}
-              completed={this.state[`${name}1`] && this.state[`${name}2`]}
-              clicked={this.tileClicked(key)}
-            />
-          );
-        })}
-        <button onClick={this.reset}>Restart game</button>
+      <div class="app-container">
+        <div class="memory-container">
+          {this.state.tilesRandomOrder.map(key => {
+            const name = key.split("")[0];
+            return (
+              <Card
+                frozen={this.state.frozen}
+                key={key}
+                name={name}
+                selected={this.state[key]}
+                completed={this.state[`${name}1`] && this.state[`${name}2`]}
+                clicked={this.tileClicked(key)}
+              />
+            );
+          })}
+        </div>
+        <button class="restart-button" onClick={this.reset}>
+          Restart game
+        </button>
         <div>Clicks in this game: {this.state.numClicks}</div>
       </div>
     );

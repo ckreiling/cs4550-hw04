@@ -2,8 +2,24 @@
 
 @import "~milligram/dist/milligram";
 
-.column > p {
-    padding-top: 10ex;
-    text-align: center;
+.green-background {
+  background-color: green;
 }
 
+.app-container {
+  text-align: center;
+}
+
+.restart-button {
+  display: block;
+  margin: 10px auto;
+}
+
+.memory-container {
+  display: grid;
+  grid-template-columns: auto auto auto auto;
+}
+
+.memory-card {
+  margin: 5px 10px;
+}
