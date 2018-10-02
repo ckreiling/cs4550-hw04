@@ -6,12 +6,13 @@ defmodule Memory.Application do
   use Application
 
   def start(_type, _args) do
-    # List all child processes to be supervised
+    # List all child processes to be supervised. These modules' start_link
+    # function will be called.
     children = [
       # Start the endpoint when the application starts
       MemoryWeb.Endpoint,
-      # Starts a worker by calling: Memory.Worker.start_link(arg)
-      # {Memory.Worker, arg},
+      # Start the memory game process when the app starts
+      Memory.Game
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

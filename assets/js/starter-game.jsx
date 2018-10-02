@@ -1,8 +1,9 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import _ from "lodash";
 
 import Card from "./card";
+import GameClient from "./game-client";
+import stateReducer from "./state-reducer";
 
 export default function game_init(root) {
   ReactDOM.render(<App />, root);
@@ -42,106 +43,68 @@ const getInitialAppState = () =>
 class App extends React.Component {
   constructor(props) {
     super(props);
-    this.state = getInitialAppState();
 
     this.reset = this.reset.bind(this);
     this.tileClicked = this.tileClicked.bind(this);
-    this.firstTileClicked = this.firstTileClicked.bind(this);
-    this.secondTileClicked = this.secondTileClicked.bind(this);
+    this.dispatch = this.dispatch.bind(this);
+
+    this.client = new GameClient(this.dispatch, window.gameName);
+    this.state = {
+      gameId: window.gameName
+    };
+  }
+
+  // Connecting function between the client and this component's state.
+  dispatch({ payload, type }) {
+    if (!payload || !type) {
+      console.error(
+        "Payload or type are not present in the dispatched action:",
+        {
+          payload,
+          type
+        }
+      );
+      return;
+    }
+    this.setState(state => stateReducer(state, { type, payload }));
   }
 
   // Reset the game
   reset() {
-    if (this.state.timeoutId) {
-      window.clearTimeout(this.state.timeoutId);
-    }
-    this.setState(getInitialAppState(), () => console.log("Reset the game"));
-  }
-
-  firstTileClicked(letter) {
-    this.setState({
-      firstSelected: letter,
-      [letter]: true
-    });
-  }
-
-  secondTileClicked(letter) {
-    const inverseLetter = letter.split("").reduce((acc, x, index) => {
-      index == 0 ? (acc = x) : (acc = `${acc}${x == 1 ? 2 : 1}`);
-      return acc;
-    }, "");
-    if (this.state[inverseLetter]) {
-      this.setState({
-        firstSelected: null,
-        secondSelected: null,
-        [letter]: true
-      });
-    } else {
-      this.setState(
-        {
-          frozen: true,
-          secondSelected: letter,
-          [letter]: true
-        },
-        () => {
-          const timeoutId = setTimeout(() => {
-            this.setState(prevState => {
-              const { firstSelected, secondSelected } = prevState;
-              return {
-                frozen: false,
-                firstSelected: false,
-                secondSelected: false,
-                [firstSelected]: false,
-                [secondSelected]: false
-              };
-            });
-          }, 3000);
-          this.setState({ timeoutId });
-        }
-      );
-    }
+    this.client.resetCurrentGame();
   }
 
   // returns a function that will be called if a card is clicked.
-  // the returned function should ONLY be called if the car is not selected.
-  tileClicked(letter) {
+  tileClicked(tile) {
     return () => {
-      if (!this.state.frozen) {
-        this.setState(prevState => ({
-          numClicks: prevState.numClicks + 1
-        }));
-      }
-      const { firstSelected } = this.state;
-      if (firstSelected) {
-        this.secondTileClicked(letter);
-      } else {
-        this.firstTileClicked(letter);
-      }
+      this.client.tileClicked(tile);
     };
   }
 
   render() {
+    const { gameState, gameId } = this.state;
     return (
-      <div class="app-container">
-        <div class="memory-container">
-          {this.state.tilesRandomOrder.map(key => {
+      <div className="app-container">
+        <h2>Current game: {gameId}</h2>
+        <div className="memory-container">
+          {gameState.tilesRandomOrder.map(key => {
             const name = key.split("")[0];
             return (
               <Card
-                frozen={this.state.frozen}
+                frozen={gameState.frozen}
                 key={key}
                 name={name}
-                selected={this.state[key]}
-                completed={this.state[`${name}1`] && this.state[`${name}2`]}
+                selected={gameState[key]}
+                completed={gameState[`${name}1`] && gameState[`${name}2`]}
                 clicked={this.tileClicked(key)}
               />
             );
           })}
         </div>
-        <button class="restart-button" onClick={this.reset}>
+        <button className="restart-button" onClick={this.reset}>
           Restart game
         </button>
-        <div>Clicks in this game: {this.state.numClicks}</div>
+        <div>Clicks in this game: {gameState.numClicks}</div>
       </div>
     );
   }
