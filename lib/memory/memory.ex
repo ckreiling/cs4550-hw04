@@ -9,40 +9,53 @@ defmodule Memory.Game do
   end
 
   @doc """
-  Returns the list of keys associated with the lobby.
+  Gets the game state for a single game. If the game isn't started, it will be
+  created with an initial state
   """
-  def get_lobby do
-    Agent.get __MODULE__, &Map.keys(&1)
-  end
-
-  @doc """
-  Starts a new game with the given ID.
-
-  Returns :ok if the ID isn't taken, or :already_exists if the ID is taken.
-  """
-  def new_game id do
+  def get_game_state id do
     Agent.get_and_update __MODULE__, fn lobby ->
       if not Map.has_key? lobby, id do
-        { :ok, Map.put(lobby, id, initial_state) }
+        { initial_state, Map.put(lobby, id, initial_state) }
       else
-        { :already_exists, lobby }
+        { Map.get(lobby, id), lobby }
       end
     end
   end
 
-  @doc """
-  Gets the game state for a single game.
-  """
-  def get_game_state id do
-    Agent.get __MODULE__, &Map.get(&1, id)
+  def reset_game id do
+    # TODO implement the reset game functionality.
+    # CHALLENGE: make sure the timeout is cancelled before resetting
   end
 
   @doc """
-  Initial state for a single memory game.
+  Updates the state for the game associated with the given id, and returns it.
   """
+  def tile_clicked id do
+    # TODO implement tile clicked functionality
+  end
+
+  defp tiles do 
+    letters = ["H", "G", "F", "E", "D", "C", "B", "A"]
+    Enum.reduce letters, [], &([ "#{&1}1" | ["#{&1}2" | &2]]) 
+  end
+
+  defp tiles_random do
+    # TODO need to randomize tiles...
+    tiles
+  end
+
+  defp tiles_map do
+    Enum.reduce tiles, Map.new, &Map.put(&2, &1, false)
+  end
+
   defp initial_state do
-    %{
-      :hello => "world"
+    base_state = %{
+      :num_clicks => 0,
+      :frozen => false,
+      :tiles_random_order => tiles_random,
+      :first_selected => nil,
+      :second_selected => nil,
     }
+    Map.merge base_state, tiles_map
   end
 end

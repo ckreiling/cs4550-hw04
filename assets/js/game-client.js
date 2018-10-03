@@ -29,6 +29,7 @@ export default function GameClient(subscriber, id) {
 
   this._gameChannel = this._socket.channel(`games:${id}`);
 
+  // TODO serialize the payload in this listener from snake_case to camelCase
   this._gameChannel.on(events.NEW_GAME_STATE, payload => {
     this._subscriber({ type: events.NEW_GAME_STATE, payload });
   });

@@ -9,37 +9,6 @@ export default function game_init(root) {
   ReactDOM.render(<App />, root);
 }
 
-const allLetters = ["A", "B", "C", "D", "E", "F", "G", "H"];
-
-// Every possible tile name, indexed.
-const tiles = allLetters.reduce((acc, letter) => {
-  acc.push(`${letter}1`, `${letter}2`);
-  return acc;
-}, []);
-
-// Tiles in the form of a key-value map, each with the value 'false'
-const tilesState = tiles.reduce((acc, letterNumber) => {
-  acc[letterNumber] = false;
-  return acc;
-}, {});
-
-// best to keep state shallow
-const getInitialAppState = () =>
-  Object.assign(
-    {},
-    {
-      numClicks: 0, // The number of times the user clicks in the game
-      frozen: false, // is the game frozen? means all buttnos should not work
-      tilesRandomOrder: tiles
-        .slice() // copy the array, don't want to sort the original
-        .sort(() => 0.5 - Math.random() * Math.random()),
-      firstSelected: null,
-      secondSelected: null,
-      timeoutId: null
-    },
-    tilesState
-  );
-
 class App extends React.Component {
   constructor(props) {
     super(props);
