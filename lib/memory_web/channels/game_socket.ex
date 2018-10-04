@@ -15,7 +15,13 @@ defmodule MemoryWeb.Channel do
 
   def handle_in "tile_clicked", %{"tile" => tile}, socket do
     "games:" <> id = socket.topic
-    broadcast! socket, "new_game_state", Memory.Game.tile_clicked(id)
+    new_state = Memory.Game.tile_clicked(id, tile)
+    broadcast! socket, "new_game_state", new_state
+    if new_state[:frozen] do
+      Process.sleep(3000)
+      new_state = Memory.Game.unfreeze id
+      broadcast! socket, "new_game_state", new_state
+    end
     { :noreply, socket }
   end
 end

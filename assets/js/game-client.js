@@ -48,6 +48,8 @@ export default function GameClient(subscriber, id) {
     });
   });
 
+  console.log("Creating a new client...");
+
   this._gameChannel
     .join()
     .receive("ok", payload => {
@@ -63,15 +65,9 @@ export default function GameClient(subscriber, id) {
 }
 
 GameClient.prototype.tileClicked = function(tile) {
-  this._gameChannel
-    .push(events.TILE_CLICKED, { tile })
-    .receive("ok", logSuccess)
-    .receive("error", resp => console.log("Tile clicked has an error..."));
+  this._gameChannel.push(events.TILE_CLICKED, { tile });
 };
 
 GameClient.prototype.resetCurrentGame = function() {
-  this._gameChannel
-    .push(events.USER_RESET)
-    .receive("ok", logSuccess)
-    .receive("error", resp => console.log("Reset failed", resp));
+  this._gameChannel.push(events.USER_RESET);
 };
