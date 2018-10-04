@@ -13,6 +13,16 @@ function logSuccess(resp) {
   console.log("Successful action:", resp);
 }
 
+function snakeCaseObjectToCamelCase(snake_case_object) {
+  return Object.keys(snake_case_object).reduce((acc, key) => {
+    const newKey = key.replace(/(\_\w)/g, function(m) {
+      return m[1].toUpperCase();
+    });
+    acc[newKey] = snake_case_object[key];
+    return acc;
+  }, {});
+}
+
 /**
  * Object for managing the websocket connection to the database. After a single
  * connection, it will call all of the different subscribers.
@@ -24,20 +34,28 @@ function logSuccess(resp) {
 export default function GameClient(subscriber, id) {
   this._subscriber = subscriber;
 
+  this._channelId = `games:${id}`;
+
   this._socket = new Socket("/socket");
   this._socket.connect();
 
-  this._gameChannel = this._socket.channel(`games:${id}`);
+  this._gameChannel = this._socket.channel(this._channelId, {});
 
-  // TODO serialize the payload in this listener from snake_case to camelCase
   this._gameChannel.on(events.NEW_GAME_STATE, payload => {
-    this._subscriber({ type: events.NEW_GAME_STATE, payload });
+    this._subscriber({
+      type: events.NEW_GAME_STATE,
+      payload: snakeCaseObjectToCamelCase(payload)
+    });
   });
 
   this._gameChannel
     .join()
-    .receive("ok", resp => {
-      console.log("Joined game room successfully", resp);
+    .receive("ok", payload => {
+      console.log("Joined game room successfully", payload);
+      this._subscriber({
+        type: events.NEW_GAME_STATE,
+        payload: snakeCaseObjectToCamelCase(payload)
+      });
     })
     .receive("error", resp => {
       console.log("Unable to join game room", resp);

@@ -53,28 +53,31 @@ class App extends React.Component {
   render() {
     const { gameState, gameId } = this.state;
     return (
-      <div className="app-container">
-        <h2>Current game: {gameId}</h2>
-        <div className="memory-container">
-          {gameState.tilesRandomOrder.map(key => {
-            const name = key.split("")[0];
-            return (
-              <Card
-                frozen={gameState.frozen}
-                key={key}
-                name={name}
-                selected={gameState[key]}
-                completed={gameState[`${name}1`] && gameState[`${name}2`]}
-                clicked={this.tileClicked(key)}
-              />
-            );
-          })}
+      (gameState && (
+        <div className="app-container">
+          <h2>Current game: {gameId}</h2>
+          <div className="memory-container">
+            {gameState.tilesRandomOrder.map(key => {
+              const name = key.split("")[0];
+              return (
+                <Card
+                  frozen={gameState.frozen}
+                  key={key}
+                  name={name}
+                  selected={gameState[key]}
+                  completed={gameState[`${name}1`] && gameState[`${name}2`]}
+                  clicked={this.tileClicked(key)}
+                />
+              );
+            })}
+          </div>
+          <button className="restart-button" onClick={this.reset}>
+            Restart game
+          </button>
+          <div>Clicks in this game: {gameState.numClicks}</div>
         </div>
-        <button className="restart-button" onClick={this.reset}>
-          Restart game
-        </button>
-        <div>Clicks in this game: {gameState.numClicks}</div>
-      </div>
+      )) ||
+      "loading..."
     );
   }
 }

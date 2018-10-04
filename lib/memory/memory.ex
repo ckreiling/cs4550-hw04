@@ -23,8 +23,8 @@ defmodule Memory.Game do
   end
 
   def reset_game id do
-    # TODO implement the reset game functionality.
-    # CHALLENGE: make sure the timeout is cancelled before resetting
+    Agent.get_and_update __MODULE__, &Tuple.append({ initial_state }, Map.put(&1, id, initial_state))
+    # TODO: make sure the timeout is cancelled before resetting
   end
 
   @doc """
@@ -32,6 +32,7 @@ defmodule Memory.Game do
   """
   def tile_clicked id do
     # TODO implement tile clicked functionality
+    Agent.get __MODULE__, &Map.get(&1, id)
   end
 
   defp tiles do 
