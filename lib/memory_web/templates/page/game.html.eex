@@ -1,5 +1,6 @@
 <script>
   window.gameName = "<%= @game %>";
+  window.userToken = "<%= @user_token %>";
 </script>
 
 <div id="root">

@@ -31,15 +31,17 @@ function snakeCaseObjectToCamelCase(snake_case_object) {
  * come from the server
  * @param {Array[Function]} subscriber
  */
-export default function GameClient(subscriber, id) {
+export default function GameClient(subscriber) {
   this._subscriber = subscriber;
 
-  this._channelId = `games:${id}`;
+  this._channelId = `games:${window.gameName}`;
 
   this._socket = new Socket("/socket");
   this._socket.connect();
 
-  this._gameChannel = this._socket.channel(this._channelId, {});
+  this._gameChannel = this._socket.channel(this._channelId, {
+    token: window.userToken
+  });
 
   this._gameChannel.on(events.NEW_GAME_STATE, payload => {
     this._subscriber({

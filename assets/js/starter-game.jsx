@@ -17,7 +17,7 @@ class App extends React.Component {
     this.tileClicked = this.tileClicked.bind(this);
     this.dispatch = this.dispatch.bind(this);
 
-    this.client = new GameClient(this.dispatch, window.gameName);
+    this.client = new GameClient(this.dispatch);
     this.state = {
       gameId: window.gameName
     };
