@@ -12,12 +12,12 @@ defmodule Memory.Game do
   Gets the game state for a single game. If the game isn't started, it will be
   created with an initial state
   """
-  def get_game_state id, user do
+  def get_game_state id do
     Agent.get_and_update __MODULE__, fn lobby ->
       unless Map.has_key? lobby, id do
-        { initial_state(), Map.put(lobby, id, state) }
+        { initial_state(), Map.put(lobby, id, initial_state()) }
       else
-        { Map.get(lobby, id), Map.put(lobby, id, state) }
+        { Map.get(lobby, id), lobby }
       end
     end
   end
@@ -103,10 +103,13 @@ defmodule Memory.Game do
     Agent.get_and_update __MODULE__, fn lobby -> 
       state = lobby[id]
       case length(state.user_list) do
-        0 -> Map.put(state, :user_list, [user])
+        0 -> 
+          new_state = Map.put(state, :user_list, [user])
+          { new_state, Map.put(lobby, id, new_state)}
         1 ->
           if !Enum.member?(state.user_list, user) do
-            { Map.update!(state, :user_list, &(&1 ++ [user])), Map.put(lobby, id, state) } 
+            new_state = Map.update!(state, :user_list, &(&1 ++ [user]))
+            { new_state, Map.put(lobby, id, new_state) } 
           else
             { state, lobby }
           end
