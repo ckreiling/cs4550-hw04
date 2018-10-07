@@ -1,0 +1,59 @@
+
+Web Dev Fall 2018 HW04 Status
+
+Answer the following questions:
+
+1. What's your name?
+Christian Kreiling
+
+
+2. What's the URL of the github repo with your work for this HW?
+https://github.com/ckreiling/cs4550-hw04
+
+
+3. What's the version number of your github release?
+I don't have a version number. Instead, I made a new repo for hw04, with 
+the same git history as hw03.
+
+
+4. What's the URL that you deployed to?
+hw04.porchboys.com/
+
+
+
+5. Is your game functionality complete? If not, what's missing?
+The game is entirely functional, however there is one stand out bug after
+resetting the game - the first card you click flips over a different card.
+
+
+
+6. Is your game properly deployed? If not, what went wrong?
+It is properly deployed to the URL specified above.
+
+
+
+7. How did you handle cards flipping back after a set timeout?
+My server accepts only 2 messages from the client,"tile_clicked"
+and "reset_game". After a user clicks a tile, there is a message pushed
+to the game's channel with the tile's ID, no matter what. The state as 
+a result of that click is broadcasted to all subscribers of the 
+given channel. The function that's called when a tile is clicked only
+changes the state if the state isn't frozen on the server (:frozen 
+value is "true" in the state).
+
+After the state is changed, if the server state froze the game, the channel
+sets a timeout using "Process.sleep/1", which calls the "unfreeze function" at
+expiration and then broadcasts the resulting state to all subscribers.
+
+The cards flip back when the new state comes down the pipe with the
+result of the "unfreeze" function call on the server.
+
+tldr; all state is held on the server so only after a message is
+sent to the client tagged as "new_game_state" will anything change.
+
+
+
+And here's a list of tasks for grading comments. Just leave this here:
+ - Development
+ - Deployment
+ - Submission
