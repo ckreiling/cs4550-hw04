@@ -15,13 +15,9 @@ defmodule Memory.Game do
   def get_game_state id, user do
     Agent.get_and_update __MODULE__, fn lobby ->
       unless Map.has_key? lobby, id do
-        state = initial_state()
-        |> add_user(user)
-        { state, Map.put(lobby, id, state) }
+        { initial_state(), Map.put(lobby, id, state) }
       else
-        state = Map.get(lobby, id)
-        |> add_user(user)
-        { state, Map.put(lobby, id, state) }
+        { Map.get(lobby, id), Map.put(lobby, id, state) }
       end
     end
   end
@@ -37,8 +33,6 @@ defmodule Memory.Game do
   def tile_clicked id, tile, user do
     Agent.get_and_update __MODULE__, fn lobby -> 
       state = lobby[id]
-      IO.inspect(state.user_list)
-      IO.inspect(user)
       if state[:frozen] or length(state.user_list) < 2 or Enum.at(state.user_list, state.turn) != user do
         { state, lobby }
       else
@@ -105,16 +99,19 @@ defmodule Memory.Game do
     Map.merge base_state, tiles_map
   end
 
-  defp add_user state, user do
-    case length(state.user_list) do
-      0 -> Map.put(state, :user_list, [user])
-      1 ->
-        if !Enum.member?(state.user_list, user) do
-          Map.update!(state, :user_list, &(&1 ++ [user]))
-        else
-          state
-        end
-      _ -> state
+  def add_user id, user do
+    Agent.get_and_update __MODULE__, fn lobby -> 
+      state = lobby[id]
+      case length(state.user_list) do
+        0 -> Map.put(state, :user_list, [user])
+        1 ->
+          if !Enum.member?(state.user_list, user) do
+            { Map.update!(state, :user_list, &(&1 ++ [user])), Map.put(lobby, id, state) } 
+          else
+            { state, lobby }
+          end
+        _ -> { state, lobby }
+      end
     end
   end
 end

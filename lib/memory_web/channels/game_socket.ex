@@ -4,7 +4,7 @@ defmodule MemoryWeb.Channel do
   import Memory.Game
 
   def join "games:" <> id, _message, socket do
-    { :ok, Memory.Game.get_game_state(id, socket.assigns[:user]), socket }
+    { :ok, Memory.Game.get_game_state(id), socket }
   end
 
   def handle_in "reset_game", _params, socket do
@@ -23,5 +23,13 @@ defmodule MemoryWeb.Channel do
       broadcast! socket, "new_game_state", new_state
     end
     { :noreply, socket }
+  end
+
+  def handle_in "add_me", params, socket do
+    "games:" <> id = socket.topic
+    user = socket.assigns[:user]
+    new_state = Memory.Game.add_user(id, user)
+    broadcast! socket, "new_game_state", new_state
+    { :noreply, socket}
   end
 end

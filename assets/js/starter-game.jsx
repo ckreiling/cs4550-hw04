@@ -16,6 +16,7 @@ class App extends React.Component {
     this.reset = this.reset.bind(this);
     this.tileClicked = this.tileClicked.bind(this);
     this.dispatch = this.dispatch.bind(this);
+    this.addMe = this.addMe.bind(this);
 
     this.client = new GameClient(this.dispatch);
     this.state = {
@@ -50,40 +51,46 @@ class App extends React.Component {
     };
   }
 
+  addMe() {
+    this.client.addMe();
+  }
+  
   render() {
     const { gameState, gameId } = this.state;
     return (
-      (gameState && (
-        <div className="app-container">
-          <h2>Current game: {gameId}</h2>
-          <div className="memory-container">
-            {gameState.tilesRandomOrder.map(key => {
-              const name = key.split("")[0];
-              return (
-                <Card
-                  frozen={gameState.frozen}
-                  key={key}
-                  name={name}
-                  selected={gameState[key]}
-                  completed={gameState[`${name}1`] && gameState[`${name}2`]}
-                  clicked={this.tileClicked(key)}
-                />
-              );
-            })}
-          </div>
-          <div className="column">
-            {gameState.userList[0]}, {gameState.userList[1]}
-          </div>
-          <div className="column">
-            {gameState.score[0]}, {gameState.score[1]}
-          </div>
-          <button className="restart-button" onClick={this.reset}>
-            Restart game
-          </button>
-          <div>Clicks in this game: {gameState.numClicks}</div>
-        </div>
-      )) ||
+    (gameState && (gameState.userList.length < 2
+             ? <button onClick={this.addMe}></button>
+             :
+             <div className="app-container">
+             <h2>Current game: {gameId}</h2>
+             <div className="memory-container">
+               {gameState.tilesRandomOrder.map(key => {
+                 const name = key.split("")[0];
+                 return (
+                   <Card
+                   frozen={gameState.frozen}
+                   key={key}
+                   name={name}
+                   selected={gameState[key]}
+                   completed={gameState[`${name}1`] && gameState[`${name}2`]}
+                   clicked={this.tileClicked(key)}
+                   />
+                 );
+               })}
+             </div>
+             <div className="column">
+               {gameState.userList[0]}, {gameState.userList[1]}
+             </div>
+             <div className="column">
+               {gameState.score[0]}, {gameState.score[1]}
+             </div>
+             <button className="restart-button" onClick={this.reset}>
+               Restart game
+             </button>
+             <div>Clicks in this game: {gameState.numClicks}</div>
+             </div>
+            )) ||
       "loading..."
-    );
+  );
   }
 }

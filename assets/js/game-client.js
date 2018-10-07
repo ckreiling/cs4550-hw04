@@ -78,3 +78,7 @@ GameClient.prototype.tileClicked = function(tile) {
 GameClient.prototype.resetCurrentGame = function() {
   this._gameChannel.push(events.USER_RESET);
 };
+
+GameClient.prototype.addMe = function() {
+  this._gameChannel.push(events.ADD_ME);
+};
