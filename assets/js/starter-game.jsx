@@ -71,6 +71,12 @@ class App extends React.Component {
               );
             })}
           </div>
+          <div className="column">
+            {gameState.userList[0]}, {gameState.userList[1]}
+          </div>
+          <div className="column">
+            {gameState.score[0]}, {gameState.score[1]}
+          </div>
           <button className="restart-button" onClick={this.reset}>
             Restart game
           </button>

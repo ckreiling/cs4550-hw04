@@ -4,7 +4,7 @@ defmodule MemoryWeb.Channel do
   import Memory.Game
 
   def join "games:" <> id, _message, socket do
-    { :ok, Memory.Game.get_game_state(id), socket }
+    { :ok, Memory.Game.get_game_state(id, socket.assigns[:user]), socket }
   end
 
   def handle_in "reset_game", _params, socket do
@@ -15,7 +15,7 @@ defmodule MemoryWeb.Channel do
 
   def handle_in "tile_clicked", %{"tile" => tile}, socket do
     "games:" <> id = socket.topic
-    new_state = Memory.Game.tile_clicked(id, tile)
+    new_state = Memory.Game.tile_clicked(id, tile, socket.assigns[:user])
     broadcast! socket, "new_game_state", new_state
     if new_state[:frozen] do
       Process.sleep(3000)

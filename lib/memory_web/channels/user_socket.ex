@@ -21,14 +21,12 @@ defmodule MemoryWeb.UserSocket do
       {:ok, user} ->
         IO.puts("socket connect from user = #{user}")
         {:ok, assign(socket, :user, user)}
-      {:error, _reason} ->
+      {:error, reason} ->
+        IO.puts("socket connect failed because: #{reason}")
         :error
     end
   end
 
-  def connect(_params, socket, _connect_info) do
-    {:ok, socket}
-  end
 
   # Socket id's are topics that allow you to identify all sockets for a given user:
   #

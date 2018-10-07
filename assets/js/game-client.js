@@ -36,12 +36,14 @@ export default function GameClient(subscriber) {
 
   this._channelId = `games:${window.gameName}`;
 
-  this._socket = new Socket("/socket");
+  this._socket = new Socket("/socket", {
+    params: {
+      token: window.userToken
+    }
+  });
   this._socket.connect();
 
-  this._gameChannel = this._socket.channel(this._channelId, {
-    token: window.userToken
-  });
+  this._gameChannel = this._socket.channel(this._channelId);
 
   this._gameChannel.on(events.NEW_GAME_STATE, payload => {
     this._subscriber({
@@ -55,7 +57,10 @@ export default function GameClient(subscriber) {
   this._gameChannel
     .join()
     .receive("ok", payload => {
-      console.log("Joined game room successfully", payload);
+      console.log(
+        "Joined game room successfully",
+        snakeCaseObjectToCamelCase(payload)
+      );
       this._subscriber({
         type: events.NEW_GAME_STATE,
         payload: snakeCaseObjectToCamelCase(payload)

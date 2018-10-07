@@ -37,20 +37,20 @@ defmodule Memory.Game do
   def tile_clicked id, tile, user do
     Agent.get_and_update __MODULE__, fn lobby -> 
       state = lobby[id]
-      if
-      state[:frozen]
-      or length(state.user_list) < 2
-      or Enum.fetch!(state, state.turn) != user do
+      IO.inspect(state.user_list)
+      IO.inspect(user)
+      if state[:frozen] or length(state.user_list) < 2 or Enum.at(state.user_list, state.turn) != user do
         { state, lobby }
-      end
-      n_clicks = state[:num_clicks] + 1
-      state = Map.replace state, :num_clicks, n_clicks
-      unless state[:first_selected] do
-        new_state = first_tile_clicked state, tile
-        { new_state, Map.put(lobby, id, new_state) }
       else
-        new_state = second_tile_clicked id, state, tile
-        { new_state, Map.put(lobby, id, new_state) }
+        n_clicks = state[:num_clicks] + 1
+        state = Map.replace state, :num_clicks, n_clicks
+        unless state[:first_selected] do
+          new_state = first_tile_clicked state, tile
+          { new_state, Map.put(lobby, id, new_state) }
+        else
+          new_state = second_tile_clicked id, state, tile
+          { new_state, Map.put(lobby, id, new_state) }
+        end  
       end
     end
   end
@@ -70,10 +70,12 @@ defmodule Memory.Game do
   defp second_tile_clicked id, state, tile do
     inv = get_inverse String.split_at(tile, 1)
     if state[inv] do
-      Map.merge state, %{ :first_selected => nil, tile => true}
+      new_state = Map.merge state, %{ :first_selected => nil, tile => true, :score => List.update_at(state.score, state.turn, &(&1 + 1))}
+      Map.update!(new_state, :turn, &(rem(&1 + 1, 2)))
     else
       first_selected = state[:first_selected]
-      Map.merge state, %{:frozen => true, :second_selected => tile, tile => true }
+      new_state = Map.merge state, %{:frozen => true, :second_selected => tile, tile => true }
+      Map.update!(new_state, :turn, &(rem(&1 + 1, 2)))
     end
   end
 
@@ -98,16 +100,17 @@ defmodule Memory.Game do
       :second_selected => nil,
       :user_list => [],
       :turn => 0,
+      :score => [0, 0]
     }
     Map.merge base_state, tiles_map
   end
 
   defp add_user state, user do
     case length(state.user_list) do
-      0 -> state.assign(:user_list, [user])
+      0 -> Map.put(state, :user_list, [user])
       1 ->
-        if !Enum.member(state.user_list, user) do
-          state.assign(:user_list, state.user_list ++ [user])
+        if !Enum.member?(state.user_list, user) do
+          Map.update!(state, :user_list, &(&1 ++ [user]))
         else
           state
         end
