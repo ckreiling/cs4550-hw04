@@ -12,13 +12,16 @@ defmodule Memory.Game do
   Gets the game state for a single game. If the game isn't started, it will be
   created with an initial state
   """
-  def get_game_state id do
+  def get_game_state id, user do
     Agent.get_and_update __MODULE__, fn lobby ->
       unless Map.has_key? lobby, id do
         state = initial_state()
+        |> add_user(user)
         { state, Map.put(lobby, id, state) }
       else
-        { Map.get(lobby, id), lobby }
+        state = Map.get(lobby, id)
+        |> add_user(user)
+        { state, Map.put(lobby, id, state) }
       end
     end
   end
@@ -31,10 +34,13 @@ defmodule Memory.Game do
   @doc """
   Updates the state for the game associated with the given id, and returns it.
   """
-  def tile_clicked id, tile do
+  def tile_clicked id, tile, user do
     Agent.get_and_update __MODULE__, fn lobby -> 
       state = lobby[id]
-      if state[:frozen] do
+      if
+      state[:frozen]
+      or length(state.user_list) < 2
+      or Enum.fetch!(state, state.turn) != user do
         { state, lobby }
       end
       n_clicks = state[:num_clicks] + 1
@@ -90,7 +96,22 @@ defmodule Memory.Game do
       :frozen => false,
       :first_selected => nil,
       :second_selected => nil,
+      :user_list => [],
+      :turn => 0,
     }
     Map.merge base_state, tiles_map
+  end
+
+  defp add_user state, user do
+    case length(state.user_list) do
+      0 -> state.assign(:user_list, [user])
+      1 ->
+        if !Enum.member(state.user_list, user) do
+          state.assign(:user_list, state.user_list ++ [user])
+        else
+          state
+        end
+      _ -> state
+    end
   end
 end
