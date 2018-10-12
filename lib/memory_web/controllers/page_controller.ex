@@ -11,7 +11,7 @@ defmodule MemoryWeb.PageController do
       render conn, "game.html", game: params["game"], user: user
     else
       conn
-      |> put_flash(:error, "Must pick a username")
+      |> put_flash(:error, "Must pick a username") # changes taken from course notes
       |> redirect(to: "/")
     end
   end
@@ -19,6 +19,6 @@ defmodule MemoryWeb.PageController do
   def join(conn, %{"join" => %{"user" => user, "game" => game}}) do
     conn
     |> put_session(:user, user)
-    |> redirect(to: "/game/#{game}")
+    |> redirect(to: "/game/#{game}") # changes taken from course notes
   end
 end
